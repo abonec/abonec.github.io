@@ -18,12 +18,9 @@ const lineFunction = d3.line()
 
 function createSvg(img) {
   return d3.select("body").append("svg")
-    .attr("width", image_width)
-    .attr("height", image_height);
-  // .style("background-image", `url("${img}")`)
-  // .style("background-size", "cover")
-  // .style("background-repeat", "no-repeat")
-  // .style("background-position", "center center");
+    // .attr("width", image_width)
+    // .attr("height", image_height)
+    .attr("viewBox", `0 0 ${image_width} ${image_height}`);
 }
 
 function addImage(container, url) {

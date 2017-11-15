@@ -18,8 +18,8 @@ const lineFunction = d3.line()
 
 function createSvg(img) {
   return d3.select("body").append("svg")
-    // .attr("width", image_width)
-    // .attr("height", image_height)
+  // .attr("width", image_width)
+  // .attr("height", image_height)
     .attr("viewBox", `0 0 ${image_width} ${image_height}`);
 }
 
@@ -33,15 +33,15 @@ function addImage(container, url) {
 }
 
 function addBox(container, coordinates) {
-  const {x, y, width, height, isValid} = coordinates;
+  const {x, y, w, h, isValid} = coordinates;
   if (isValid) {
     return container.append("rect")
       .attr("x", x)
       .attr("y", y)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", w)
+      .attr("height", h)
       .style("stroke-width", '1px')
-      .attr("opacity", '0.6')
+      .attr("opacity", '0')
       ;
   } else {
     console.log(`${JSON.stringify(coordinates)} is invalid`);
@@ -52,8 +52,8 @@ function addBox(container, coordinates) {
 const defaultStrokeWidth = 2;
 const selectedStrokeWidth = 4;
 
-function addBoundingBox(container, sku, boxCoordinates) {
-  const coordinates = convertCoordinates(boxCoordinates);
+
+function addBoundingBox(container, name, coordinates) {
   const path = convertCoordinatesToPath(coordinates);
   const bbox = container.append('path').attr('d', lineFunction(path)).attr('stroke', 'blue').attr('stroke-width', defaultStrokeWidth).attr('fill', 'none');
   const box = addBox(container, coordinates);
@@ -63,7 +63,7 @@ function addBoundingBox(container, sku, boxCoordinates) {
     div.transition()
       .duration(200)
       .style("opacity", .9);
-    div.html(sku.name)
+    div.html(name)
       .style("left", (d3.event.pageX) + "px")
       .style("top", (d3.event.pageY - 28) + "px");
   }).on('mouseout', () => {
@@ -93,23 +93,23 @@ function convertCoordinates(coordinates) {
   }
   const x = x1;
   const y = y1;
-  const width = x2 - x1;
-  const height = y2 - y1;
-  if (height < 0) {
+  const w = x2 - x1;
+  const h = y2 - y1;
+  if (h < 0) {
     debugger;
   }
-  return {x, y, width, height, isValid: true};
+  return {x, y, w, h, isValid: true};
 }
 
 function convertCoordinatesToPath(coordinates) {
-  const {x, y, width, height} = coordinates;
+  const {x, y, w, h} = coordinates;
   return [
     {x, y},
-    {x: x + width, y},
-    {x: x + width, y: y + height},
-    {x, y: y + height},
+    {x: x + w, y},
+    {x: x + w, y: y + h},
+    {x, y: y + h},
     {x, y},
-    {x: x + width, y},
+    {x: x + w, y},
   ];
 
 }
@@ -117,16 +117,25 @@ function convertCoordinatesToPath(coordinates) {
 const container = createSvg();
 addImage(container, image_url);
 
-const photos = test_json.result.photos;
-for (const image_tag in photos) {
-  if (photos.hasOwnProperty(image_tag)) {
-    const photo = photos[image_tag];
-    photo.forEach((sku) => {
-      const boxes = sku.box;
-      boxes.forEach((box) => {
-        addBoundingBox(container, sku, box);
+if (true) {
+  const {annotations} = ic_test.json;
+  for (let box of annotations) {
+    addBoundingBox(container, box.name, Object.assign({}, box, {isValid: true}));
+  }
+} else {
+  const photos = test_json.result.photos;
+  for (const image_tag in photos) {
+    if (photos.hasOwnProperty(image_tag)) {
+      const photo = photos[image_tag];
+      photo.forEach((sku) => {
+        const boxes = sku.box;
+        boxes.forEach((box) => {
+          const coordinates = convertCoordinates(box);
+          addBoundingBox(container, sku.name, coordinates);
+        });
       });
-    });
+    }
   }
 }
+
 

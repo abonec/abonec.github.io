@@ -81,7 +81,7 @@ window.max_y = 0;
 const diff_x = -60;
 const diff_y = 40;
 
-function convertCoordinates(coordinates) {
+function convertCoordinatesIR(coordinates) {
   let {x1, y1, x2, y2} = coordinates;
   x1 = +x1 + diff_x;
   x2 = +x2 + diff_x;
@@ -99,6 +99,16 @@ function convertCoordinates(coordinates) {
     debugger;
   }
   return {x, y, w, h, isValid: true};
+}
+
+function convertCoordinatesIC(coordinates) {
+  const {x, y, w, h} = coordinates;
+  return {
+    x: x - w / 2,
+    y: y - h / 2,
+    w, h,
+  };
+
 }
 
 function convertCoordinatesToPath(coordinates) {
@@ -120,7 +130,8 @@ addImage(container, image_url);
 if (true) {
   const {annotations} = ic_test.json;
   for (let box of annotations) {
-    addBoundingBox(container, box.name, Object.assign({}, box, {isValid: true}));
+    coordinates = Object.assign({}, convertCoordinatesIC(box), {isValid: true});
+    addBoundingBox(container, box.name, coordinates);
   }
 } else {
   const photos = test_json.result.photos;
@@ -130,7 +141,7 @@ if (true) {
       photo.forEach((sku) => {
         const boxes = sku.box;
         boxes.forEach((box) => {
-          const coordinates = convertCoordinates(box);
+          const coordinates = convertCoordinatesIR(box);
           addBoundingBox(container, sku.name, coordinates);
         });
       });
